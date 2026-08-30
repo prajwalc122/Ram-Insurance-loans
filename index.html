@@ -661,74 +661,253 @@ footer{ background:var(--navy-dark); color:#fff; padding:50px 0 24px; }
 <a href="https://wa.me/918310345535" target="_blank" rel="noopener" class="whatsapp-float" aria-label="WhatsApp"><svg class="icon" style="width:26px;height:26px"><use href="#i-whatsapp"/></svg></a>
 <button class="back-top" id="backTop" aria-label="Back to top">↑</button>
 
+```javascript
 <script>
-(function(){
-"use strict";
-const $ = (s,c)=> (c||document).querySelector(s);
-const $$ = (s,c)=> Array.from((c||document).querySelectorAll(s));
+(function () {
+    "use strict";
 
-/* mobile menu */
-const hamburgerBtn = $("#hamburgerBtn");
-const mobileMenu = $("#mobileMenu");
-hamburgerBtn.addEventListener("click", ()=>{
-    const open = mobileMenu.classList.toggle("open");
-    hamburgerBtn.setAttribute("aria-expanded", open ? "true":"false");
-    hamburgerBtn.innerHTML = open ? '<svg class="icon"><use href="#i-close"/></svg>' : '<svg class="icon"><use href="#i-menu"/></svg>';
-});
-$$("#mobileMenu a").forEach(a=>a.addEventListener("click", ()=>{
-    mobileMenu.classList.remove("open");
-    hamburgerBtn.setAttribute("aria-expanded","false");
-    hamburgerBtn.innerHTML = '<svg class="icon"><use href="#i-menu"/></svg>';
-}));
+    /* =====================================================
+       HELPER FUNCTIONS
+    ===================================================== */
 
-/* back to top */
-const backTop = $("#backTop");
-window.addEventListener("scroll", ()=>{ backTop.classList.toggle("show", window.scrollY > 500); }, {passive:true});
-backTop.addEventListener("click", ()=> window.scrollTo({top:0, behavior:"smooth"}));
+    const $ = (selector, parent = document) =>
+        parent.querySelector(selector);
 
-/* form validation + whatsapp */
-function validateField(f){
-    const group = f.closest(".field-group");
-    const valid = f.checkValidity();
-    group.classList.toggle("invalid", !valid);
-    return valid;
-}
+    const $$ = (selector, parent = document) =>
+        Array.from(parent.querySelectorAll(selector));
+
+
+    /* =====================================================
+       MOBILE MENU
+    ===================================================== */
+
+    const hamburgerBtn = $("#hamburgerBtn");
+    const mobileMenu = $("#mobileMenu");
+
+    if (hamburgerBtn && mobileMenu) {
+
+        hamburgerBtn.addEventListener("click", function () {
+
+            const isOpen =
+                mobileMenu.classList.toggle("open");
+
+            hamburgerBtn.setAttribute(
+                "aria-expanded",
+                isOpen ? "true" : "false"
+            );
+
+            hamburgerBtn.innerHTML = isOpen
+                ? '<svg class="icon"><use href="#i-close"></use></svg>'
+                : '<svg class="icon"><use href="#i-menu"></use></svg>';
+
+        });
+
+
+        /* Close mobile menu after clicking a link */
+
+        $$("#mobileMenu a").forEach(function (link) {
+
+            link.addEventListener("click", function () {
+
+                mobileMenu.classList.remove("open");
+
+                hamburgerBtn.setAttribute(
+                    "aria-expanded",
+                    "false"
+                );
+
+                hamburgerBtn.innerHTML =
+                    '<svg class="icon"><use href="#i-menu"></use></svg>';
+
+            });
+
+        });
+
+    }
+
+
+    /* =====================================================
+       BACK TO TOP
+    ===================================================== */
+
+    const backTop = $("#backTop");
+
+    if (backTop) {
+
+        window.addEventListener(
+            "scroll",
+            function () {
+
+                if (window.scrollY > 500) {
+                    backTop.classList.add("show");
+                } else {
+                    backTop.classList.remove("show");
+                }
+
+            },
+            { passive: true }
+        );
+
+
+        backTop.addEventListener("click", function () {
+
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            });
+
+        });
+
+    }
+
+
+   /* =====================================================
+   CONTACT FORM → STRAIGHT TO WHATSAPP
+===================================================== */
+
 const form = $("#contactForm");
 const status = $("#formMessage");
-$$("input, select", form).forEach(f=> f.addEventListener("blur", ()=>{ if(f.hasAttribute("required")) validateField(f); }));
 
-form.addEventListener("submit", e=>{
-    e.preventDefault();
-    let ok = true;
-    $$("input[required], select[required]", form).forEach(f=>{ if(!validateField(f)) ok = false; });
-    if(!ok){
-        status.className = "form-status show error";
-        status.textContent = "Please fill in all required fields correctly.";
-        return;
+if (form && status) {
+
+    /* =====================================================
+       ⚠️ ENTER YOUR RAM INSURANCE & LOANS WHATSAPP NUMBER HERE
+       Format: country code + number, NO +, NO spaces, NO dashes
+       Example for +91 83103 45535 → "918310345535"
+    ===================================================== */
+    const RAM_WHATSAPP_NUMBER = "918310345535"; // <-- REPLACE WITH YOUR NUMBER
+
+    function validateField(field) {
+        const group = field.closest(".field-group");
+        if (!group) return field.checkValidity();
+        const valid = field.checkValidity();
+        group.classList.toggle("invalid", !valid);
+        return valid;
     }
-    const name = $("#name").value.trim();
-    const phone = $("#phone").value.trim();
-    const requirement = $("#requirement").value;
-    const message = $("#message").value.trim();
-    const text = `Hello RAM, I'd like to enquire about ${requirement}.\n\nName: ${name}\nPhone: ${phone}` + (message ? `\nMessage: ${message}` : "");
-    status.className = "form-status show success";
-    status.textContent = "Opening WhatsApp with your enquiry details...";
-    window.open("https://wa.me/918310345535?text=" + encodeURIComponent(text), "_blank", "noopener");
-});
 
-/* scroll reveal */
-if("IntersectionObserver" in window){
-    const obs = new IntersectionObserver(entries=>{
-        entries.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add("in-view"); obs.unobserve(en.target); } });
-    }, {threshold:0.12});
-    $$(".reveal").forEach(el=>obs.observe(el));
-}else{
-    $$(".reveal").forEach(el=>el.classList.add("in-view"));
+    $$("input, select", form).forEach(function (field) {
+        if (field.hasAttribute("required")) {
+            field.addEventListener("blur", function () {
+                validateField(field);
+            });
+        }
+    });
+
+    form.addEventListener("submit", function (event) {
+
+        event.preventDefault();
+
+        let formIsValid = true;
+        $$("input[required], select[required]", form).forEach(function (field) {
+            if (!validateField(field)) {
+                formIsValid = false;
+            }
+        });
+
+        if (!formIsValid) {
+            status.className = "form-status show error";
+            status.textContent = "Please fill in all required fields correctly.";
+            return;
+        }
+
+        const name = $("#name").value.trim();
+        const phone = $("#phone").value.trim();
+        const requirement = $("#requirement").value.trim();
+        const message = $("#message").value.trim();
+
+        const whatsappMessage =
+            "New Customer Enquiry\n" +
+            "Name: " + name + "\n" +
+            "Mobile: " + phone + "\n" +
+            "Requirement: " + requirement + "\n" +
+            "Message: " + (message || "No additional message");
+
+        const encodedMessage = encodeURIComponent(whatsappMessage);
+
+        const whatsappURL =
+            "https://wa.me/" + RAM_WHATSAPP_NUMBER + "?text=" + encodedMessage;
+
+        /* DIRECT REDIRECT — no new tab, no popup blocker, straight to WhatsApp */
+        window.location.href = whatsappURL;
+    });
 }
 
-$("#year").textContent = new Date().getFullYear();
+
+    /* =====================================================
+       SCROLL REVEAL ANIMATION
+    ===================================================== */
+
+    const revealElements =
+        $$(".reveal");
+
+
+    if (
+        "IntersectionObserver" in window &&
+        revealElements.length > 0
+    ) {
+
+        const observer =
+            new IntersectionObserver(
+                function (entries, observer) {
+
+                    entries.forEach(function (entry) {
+
+                        if (entry.isIntersecting) {
+
+                            entry.target.classList.add(
+                                "in-view"
+                            );
+
+                            observer.unobserve(
+                                entry.target
+                            );
+
+                        }
+
+                    });
+
+                },
+                {
+                    threshold: 0.12
+                }
+            );
+
+
+        revealElements.forEach(function (element) {
+
+            observer.observe(element);
+
+        });
+
+    } else {
+
+        revealElements.forEach(function (element) {
+
+            element.classList.add("in-view");
+
+        });
+
+    }
+
+
+    /* =====================================================
+       CURRENT YEAR
+    ===================================================== */
+
+    const yearElement = $("#year");
+
+    if (yearElement) {
+
+        yearElement.textContent =
+            new Date().getFullYear();
+
+    }
+
+
 })();
 </script>
+```
+
 
 </body>
 </html>
